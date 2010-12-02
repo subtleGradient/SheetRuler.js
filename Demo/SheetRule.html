@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv=Content-type content="text/html; charset=utf-8">
+	<title>Sheet State Demo</title>
+<link rel=stylesheet href=pp.css>
+
+<style>
+html,
+body{
+	margin:0;padding:0;
+}
+</style>
+</head>
+<body>
+<div>
+
+<big>
+
+<a class=c>A</a>
+<b class=c>B</b>
+<a class=d>A</a>
+<b class=d>B</b>
+<a class=c>A</a>
+<b class=c>B</b>
+<a class=d>A</a>
+<b class=d>B</b>
+<a class=c>A</a>
+<b class=c>B</b>
+<a class=d>A</a>
+<b class=d>B</b>
+
+</big>
+
+</div>
+<script src="../Source/Sheet.DOM.js"></script>
+<script src="../Source/SheetRule.js"></script>
+<script>
+
+new SheetRule('transitionEverything')
+.setTransition(.7)
+.addChildSelector('*')
+.enableFor(document.getElementsByTagName('html'))
+
+new SheetRule('grabbed')
+.appendStyle('border:2px dotted aqua')
+.applyTo(document.getElementsByTagName('b'))
+.enableFor(document.getElementsByTagName('html'))
+
+defaultRule = new SheetRule()
+.addSelector('a','b')
+.appendStyle('background-color:white')
+
+rule = new SheetRule()
+.addSelector('a.c')
+.addChildSelector('a')
+.appendStyle('background-color:green')
+
+setTimeout(function(){
+	rule.applyTo(document.getElementsByTagName('b'))
+	
+	setTimeout(function(){
+		rule.removeFrom(document.getElementsByTagName('b'))
+		
+		rule.enableFor(document.getElementsByTagName('body'))
+		
+	}, 1000);
+	
+}, 1000);
+
+</script>
+</body>
+</html>

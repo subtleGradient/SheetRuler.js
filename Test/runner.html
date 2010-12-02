@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv=Content-type content="text/html; charset=utf-8">
+	<title>runner.html</title>
+<script>
+
+function log(messages){
+	messages = Array.prototype.slice.call(arguments)
+	for (var i = 0; i < messages.length; ++i){
+		messages[i] = '' + messages[i]
+	}
+	document.body.appendChild(document.createTextNode('' + messages.join(', ') + "\n"))
+}
+
+function ok(passed, message){
+	if (message && message.message) message = {}.toString.call(message) + ": " + message.message
+	var log = document.createElement('li')
+	log.innerHTML = (passed ? 'PASS' : 'FAIL') +": "+ message
+	log.style.backgroundColor = passed ? 'green' : 'red'
+	log.style.color = 'white'
+	document.getElementById('test-results').appendChild(log)
+}
+
+function load(){
+	var newScript = document.createElement('script')
+	newScript.src = ('./'+location.search).replace('?','')
+	var firstScript = document.getElementsByTagName('script')[0]
+	firstScript.parentNode.insertBefore(newScript,firstScript)
+}
+
+</script>
+<style>
+html,body{
+	margin:0;padding:0;
+	font:12px Helvetica, sans-serif;
+	white-space: pre;
+}
+ol{
+	margin:0;padding:0;
+}
+</style>
+</head>
+<body onload="load()">
+<ol id=test-results></ol>
+<div id=test style="top:1px">test</div>
+<style>
+#test{
+	position:relative;
+	background: red;
+	height: 22px;
+	width: 22px !important;
+}
+</style>
+</body>
+</html>
