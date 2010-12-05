@@ -3,53 +3,38 @@
 <head>
 	<meta http-equiv=Content-type content="text/html; charset=utf-8">
 	<title>runner.html</title>
+	<link rel=stylesheet href="lib/qunit/qunit.css">
+<style>html,body{ margin:0;padding:0;}</style>
+<script src="lib/qunit/qunit.js"></script>
+<script src="../Source/SheetRuler.js"></script>
 <script>
-
-function log(messages){
-	messages = Array.prototype.slice.call(arguments)
-	for (var i = 0; i < messages.length; ++i){
-		messages[i] = '' + messages[i]
-	}
-	document.body.appendChild(document.createTextNode('' + messages.join(', ') + "\n"))
-}
-
-function ok(passed, message){
-	if (message && message.message) message = {}.toString.call(message) + ": " + message.message
-	var log = document.createElement('li')
-	log.innerHTML = (passed ? 'PASS' : 'FAIL') +": "+ message
-	log.style.backgroundColor = passed ? 'green' : 'red'
-	log.style.color = 'white'
-	document.getElementById('test-results').appendChild(log)
-}
-
-function load(){
+function load(location){
 	var newScript = document.createElement('script')
-	newScript.src = ('./'+location.search).replace('?','')
+	newScript.src = location + "?_" + +new Date
 	var firstScript = document.getElementsByTagName('script')[0]
 	firstScript.parentNode.insertBefore(newScript,firstScript)
 }
-
+load(('./'+location).replace(/^[^?]*\?/,''))
+// load(('./'+location.hash).replace('#',''))
 </script>
-<style>
-html,body{
-	margin:0;padding:0;
-	font:12px Helvetica, sans-serif;
-	white-space: pre;
-}
-ol{
-	margin:0;padding:0;
-}
-</style>
 </head>
-<body onload="load()">
-<ol id=test-results></ol>
-<div id=test style="top:1px">test</div>
-<style>
+<body>
+
+<h1 id=qunit-header>SheetRuler</h1>
+<h2 id=qunit-userAgent></h2>
+<h2 id=qunit-banner></h2>
+<div id=qunit-testrunner-toolbar></div>
+<ol id=qunit-tests></ol>
+<!-- <div id=qunit-fixture></div> -->
+
+<div id=test style=top:1px>test</div>
+<style id=lastStyleInBody>
 #test{
-	position:relative;
+	position:absolute;
 	background: red;
 	height: 22px;
 	width: 22px !important;
+	left: -999px;
 }
 </style>
 </body>
