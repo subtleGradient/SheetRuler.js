@@ -1,176 +1,168 @@
 /*
 ---
-name : SheetRule
-description : CSSOM sugar. Style-object oriented interface
+name : SheetRuler
+description : SheetRuler will rock your socks!
 
 authors   : Thomas Aylott
 copyright : © 2010 Thomas Aylott
 license   : MIT
 
-provides : SheetRule
-requires : Sheet.DOM
+provides : SheetRuler
 ...
 */
+var SheetRuler = {}
+;(function(SheetRuler){
 
-function SheetRule(){
-	if (this instanceof SheetRule)
-		this.construct.apply(this, arguments)
-	else return SheetRule.run.apply({}, arguments)
+var styleSheets = document.styleSheets
+
+SheetRuler.isSheetReal = isSheetReal
+SheetRuler.createStyleSheet = createStyleSheetWrapper
+SheetRuler.createRule = createStyleSheetRule
+SheetRuler.getElement = getElementForSheetOrRule
+
+/*
+SheetRuler.createStyleSheet = function(){
+	var sheet
+	sheet = createStyleSheet1()
+	if (sheet === styleSheets[styleSheets.length-1])
+		SheetRuler.createStyleSheet = createStyleSheet1
+	else sheet = createStyleSheet2()
+	if (sheet === styleSheets[styleSheets.length-1])
+		SheetRuler.createStyleSheet = createStyleSheet2
+	else throw new Error("This browser doesn't support creating styleSheets");
+	return sheet
+}
+*/
+
+// //  //  //  //  //  //  //  //  //  //  //  //  //  //  //  //  //  //  // //
+function isSheetReal(sheet){
+	// tests if the sheet exists, has rules and is in the document.styleSheets collection
+	if (!(sheet && (sheet.cssRules || sheet.rules))) return false
+	var i = styleSheets.length || 0
+	while (i--) if (styleSheets[i] === sheet) return true
+	return false
 }
 
-;(function(SheetRule){
-	var	proto = SheetRule.prototype = {constructor:SheetRule}
+function createStyleSheetWrapper(name){
+	var	fallback
+	,	element
+	,	sheet = createStyleSheet(name)
+	if (!isSheetReal(sheet)){
+		element = getElementForSheetOrRule(sheet)
+		element.parentNode.removeChild(element)
+		fallback = sheet = createStyleSheet_fallback(name)
+		if (!isSheetReal(sheet)) throw new Error("No support for dynamic styleSheets")
+	}
+	// element = getElementForSheetOrRule(sheet)
+	// if (element && element.previousSibling && element.previousSibling.nodeName == 'HEAD'){
+	// 	if (fallback) SheetRuler.createStyleSheet = createStyleSheet_fallback
+	// 	else SheetRuler.createStyleSheet = createStyleSheet
+	// }
+	return sheet
+}
 
-	SheetRule.run = function(){
-		throw new Error("Usage: `new SheetRule`");
-	}
-	
-	SheetRule._rules = []
-	
-	SheetRule._register = function(className, rule){
-		if (!SheetRule._rules[className]) SheetRule._rules[className] = []
-		SheetRule._rules[className].push(rule)
-	}
-	SheetRule.get = function(className){
-		return SheetRule._rules[className] || []
-	}
-	
-	proto.construct = function(className){
-		if (className == null) className = 'SheetRule' +  ++util.UID + +new Date
-		this._className = className
-		this._parentClassName = this._className + 'Parent'
-		SheetRule._register(this._className, this)
-		SheetRule._register(this._parentClassName, this)
-		
-		this.rule = util.createRule('.' + this._className, "")
-		this.style = this.rule.style
-		this._selectors = [this.rule.selectorText]
-		this._childSelectors = []
-	}
-	
-	proto._updateSelectors = function(){
-		var _childSelectors = '.'+this._parentClassName+" " + this._childSelectors.join(', .'+this._parentClassName+" ")
-		this.rule.selectorText = this._selectors.join(',') + ',' + _childSelectors
-	}
-	
-	proto.addSelector = function(){
-		this._selectors = this._selectors.concat(util.slice.call(arguments))
-		this._updateSelectors()
-		return this
-	}
-	
-	proto.addChildSelector = function(){
-		this._childSelectors = this._childSelectors.concat(util.slice.call(arguments))
-		this._updateSelectors()
-		return this
-	}
-	
-	proto.removeSelector = function(selector){
-		var _selectors = this._selectors
-		util.Array_erase.call(this._selectors, selector)
-		this._updateSelectors()
-		return this
-	}
-	
-	proto.toString = function(){
-		return this.style.parentRule.cssText
-	}
-	
-	proto.getElements = function(context){
-		return util.call.call(util.getElementsByClassName, context || document, this._className)
-	}
-	
-	proto.getParentElements = function(context){
-		return util.call.call(util.getElementsByClassName, context || document, this._parentClassName)
-	}
-	
-	proto.appendStyle = function(style){
-		this.style.cssText += ';' + style
-		return this
-	}
-	
-	proto.setTransition = function(transition){
-		if (typeof transition == 'number') transition = 'all ' + transition + 's ease-in'
-		if (transition == null) transition = 'all .5s ease-in'
-		if (transition === false) transition = 'none'
-		this.appendStyle(util.cssPrefix('transition:' + transition))
-		return this
-	}
-	
-	proto.applyTo = function(nodes, _asParent){
-		var className = _asParent ? this._parentClassName : this._className
-		if (nodes[0] && nodes[0].className != null)
-			for (var i = -1, node; node = nodes[++i];)
-				node.className = className + ' ' + node.className
-		else nodes.className = className + ' ' + nodes.className
-		return this
-	}
-	
-	proto.removeFrom = function(nodes, _asParent){
-		var className = _asParent ? this._parentClassName : this._className
-		if (nodes[0] && nodes[0].className != null)
-			for (var i = -1, node; node = nodes[++i];)
-				node.className = util.trim(('' + node.className).replace(new RegExp('(^|\\s)' + className + '(?:\\s|$)'), '$1'))
-		else nodes.className = util.trim(('' + nodes.className).replace(new RegExp('(^|\\s)' + className + '(?:\\s|$)'), '$1'))
-		return this
-	}
-	
-	proto.enableFor = function(nodes){ return this.applyTo(nodes, true) }
-	proto.disableFor = function(nodes){ return this.removeFrom(nodes, true) }
+function getElementForSheetOrRule(sheetOrRule){
+	if (!sheetOrRule) return null
+	return	sheetOrRule.ownerNode
+		||	sheetOrRule.owningElement
+		||	SheetRuler.getElement(sheetOrRule.parentStyleSheet)
+}
+function createStyleSheetRule(sheet, selector, style){
+	var rules = sheet.cssRules || sheet.rules
+	if (sheet.insertRule) sheet.insertRule('' + selector + '{' + style + '}', rules.length)
+	else if (sheet.addRule) sheet.addRule(selector, style)
+	return rules[rules.length-1]
+}
 
-	// //  //  //  //  //  //  //  //  //  //  //  //  //  //  //  //  //  //  // //
+function createStyleSheet(name){
+	// Append a new STYLE element to the end of the greatest grandparent element.
+	// This is the simplest way to ensure that the new STYLE is at the very end of the styleSheets collection.
+	// That is necessary for new sheets to have the greatest importance in the cascade.
+	
+	// SUCCESS
+	//   Safari 5
+	//   Safari 4
+	//   Firefox 1.0
+	//   IE6
+	//   IE8 Standards
+	//   IE8 as IE7 Standards
+	//   IE8 Quirks
+	//   IE9 Standards
+	//   Opera 9.24
+	//   Mozilla 1.4
+	
+	// ODDNESS
+	// In Opera 9.24 & 10.54 (uh, probly all of them), before domready
+	//   document.documentElement.appendChild(document.createElement('style')) 
+	//   adds the new STYLE element BEFORE the BODY tag.
+	//   But if there are any STYLE elements in the BODY, 
+	//   they will be applied with higher precidence than the dynamic sheet you just added.
+	
+	// FAIL
+	//   Safari 2.0
+	//   Safari 2.0.4
+	//   Safari 3.0.4 creates a new StyleSheet without effecting the document
+	
+	if (!name) name = "SheetRuler-" + +new Date
+	else name = name.replace(/[^\w_-]/g,'-')
+	var styleElement = document.createElement("style")
+	styleElement.setAttribute('name', styleElement.id = name)
+	// if (document.documentElement.lastChild.nodeName == 'BODY')
+	document.documentElement.appendChild(styleElement)
+	return styleElement.sheet || styleElement.styleSheet
+}
 
-	var util = SheetRule.util = {}
+function createStyleSheet_fallback(name){
+	// Works in Safari 3.0.4
+	// Older versions of Safari strictly limited STYLE elements to children of the HEAD
+	// So, adding a STYLE element to a different parent dynamically fails silently.
+	var style = document.createElement('div')
+	style.appendChild(document.createElement('style'))
+	document.getElementsByTagName('head')[0].appendChild(style)
+	var styleElement = style.firstChild
+	return styleElement.sheet || styleElement.styleSheet
+}
 
-	util.UID = 0
-
-	var _log = []
-	function log(message){
-		_log.push(arguments)
-		if (typeof DEBUG != 'undefined') util.dumpLog()
-	}
-	util.dumpLog = function(){var log = _log; _log = []; return log}
-
-	util.trim = function(str){
-		// http://blog.stevenlevithan.com/archives/faster-trim-javascript
-		var	str = (''+str).replace(/^\s\s*/, ''),
-			ws = /\s/,
-			i = str.length;
-		while (ws.test(str.charAt(--i)));
-		return str.slice(0, i + 1);
-	}
-
-	util.call = function(){}.call
-	util.slice = [].slice
-
-	util.getElementsByClassName = document.getElementsByClassName 
-		|| function(className){return ($$||$)("." + className)}
-
-	util.cssPrefixes = '-webkit- -moz- -ms- -o-'.split(' ')
-	util.cssPrefix = function(css, joiner){
-		if (joiner == null) joiner = ';'
-		var CSS = []
-		CSS.push(css)
-		for (var i = 0; i < util.cssPrefixes.length; ++i)
-			CSS.push(util.cssPrefixes[i] + css)
-		return CSS.join(joiner)
-	}
-
-	util.createRule = Sheet.DOM.createRule
-
-	util.Array_erase = function(item){
-		// From MooTools 1.3
-		for (var i = this.length; i--;)
-			if (this[i] === item) this.splice(i, 1);
-		return this;
-	}
+function disableSheet(sheet){}
+function destroySheet(sheet){}
+function disableRule(rule){}
+function destroyRule(rule){}
 
 
-	/*<DEBUG>*/
-	for (var property in proto) if (typeof proto[property] == 'function') proto[property].displayName = 'SheetRule.prototype.' + property
-	for (var property in util) if (typeof proto[property] == 'function') proto[property].displayName = 'SheetRule.util.' + property
-	/*</DEBUG>*/
 
-}(SheetRule))
+}(SheetRuler));
 
-/*<CommonJS>*/if (typeof exports != 'undefined') exports.SheetRule = SheetRule/*</CommonJS>*/
+
+// var styleParent = document.documentElement
+// var sheetCount = styleSheets.length
+// styleParent.appendChild(document.createElement("style"))
+// if (styleSheets.length == sheetCount)
+// 	styleParent = document.getElementsByTagName('head')[0]
+
+// document.getElementsByTagName('head')[0].appendChild(style = document.createElement("style"))
+
+// function createStyleSheet1_2(){
+// 	// Works in: Safari 5, Safari 3.0.4
+// 	// IE6 Operation Aborted
+// 	var	styles = document.getElementsByTagName('style')
+// 	,	lastSheetEl = styles[styles.length-1]
+// 	,	styleElement = document.createElement("style")
+// 	if (lastSheetEl) styleElement.parentNode.insertBefore(styleElement, lastSheetEl.nextSibling)
+// 	// else styleParent.appendChild(styleElement)
+// 	return styleElement.sheet || styleElement.styleSheet
+// }
+
+// function createStyleSheet1_1(){
+// 	var styleElement = document.createElement("link")
+// 	styleElement.setAttribute('ref', 'stylesheet')
+// 	styleElement.setAttribute('href', 'javascript:""')
+// 	document.documentElement.appendChild(styleElement)
+// 	var sheet = styleElement.sheet || styleElement.styleSheet
+// 	return sheet
+// }
+
+// //  //  //  //  //  //  //  //  //  //  //  //  //  //  //  //  //  //  // //
+
+function String_escapeHTML(){
+	return ('' + this).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')
+}
