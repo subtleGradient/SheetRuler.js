@@ -1,5 +1,6 @@
-var testEl, currentStyle, styleSheets_length
+var testEl, currentStyle, styleSheets_length = document.styleSheets.length
 module("Create StyleSheet",{
+	// sheet: SheetRuler.createStyleSheet('cssRule_tests'),
 	setup: function(){
 		if (!this.sheet){
 			styleSheets_length = document.styleSheets.length
@@ -9,34 +10,58 @@ module("Create StyleSheet",{
 })
 
 test("Create a new StyleSheet", function(){
-	
-	var sheet = this.sheet
-	
-	ok (SheetRuler.isSheetReal(sheet), "sheet should be real")
-	
-	equal (SheetRuler.getElement(sheet).parentNode.nodeName, 'HTML', "parentNode should be HTML")
-	
-	equal (document.styleSheets.length, styleSheets_length + 1, "Created a new sheet")
-	
-	notEqual (document.styleSheets.length, styleSheets_length, "new Sheet changed document.styleSheets.length")
-	
+	ok (SheetRuler.isSheetReal(this.sheet), "sheet should be real")
+})
+
+test("new StyleSheet's node should be a child of HTML", function(){
+	equal (SheetRuler.getElement(this.sheet).parentNode.nodeName, 'HTML', "parentNode should be HTML")
+})
+
+test("new Sheet changed document.styleSheets.length", function(){
+	notEqual (document.styleSheets.length, styleSheets_length)
+	equal (document.styleSheets.length, styleSheets_length + 1)
+})
+
+test("new Sheet was added to document.styleSheets", function(){
 	var found
 	for (var i = 0; i < document.styleSheets.length; ++i){
-		if (sheet != document.styleSheets[i]) continue
-		found = sheet === document.styleSheets[i]
+		if (this.sheet != document.styleSheets[i]) continue
+		found = this.sheet === document.styleSheets[i]
 	}
-	ok (found, "new Sheet was added to document.styleSheets")
-	
-	ok (document.styleSheets[document.styleSheets.length -1] === sheet, "new Sheet is the last item in document.styleSheets")
-	
+	ok (found)
+})
+
+test("new Sheet is the last item in document.styleSheets", function(){
+	ok (document.styleSheets[document.styleSheets.length -1] === this.sheet)
+})
+
+test("new Sheet's STYLE element is the last STYLE in the DOM", function(){
 	var styleElements = document.getElementsByTagName('style')
-	ok (styleElements[styleElements.length-1] === (sheet.ownerNode || sheet.owningElement)
-		,"new Sheet's STYLE element is the last STYLE in the DOM")
+	ok (styleElements[styleElements.length-1] === (this.sheet.ownerNode || this.sheet.owningElement))
+})
+
+test("shouldn't have a nextSibling", function(){
+	ok ((this.sheet.ownerNode || this.sheet.owningElement).nextSibling == null)
+})
+
+test("styleSheets limit?", function(){
+	var startLength = document.styleSheets.length
+	var i = 0, max = 32 - startLength
+	while (++i <= max){
+		SheetRuler.createStyleSheet("Sheet-" + i)
+		equal (document.styleSheets.length, startLength + i, "Should support at least " + (startLength + i) + " styleSheets")
+	}
 	
-	ok ((sheet.ownerNode || sheet.owningElement).nextSibling == null
-		,"shouldn't have a nextSibling")
-	
-	// equal ((sheet.ownerNode || sheet.owningElement).previousSibling
-	// 	,document.getElementsByTagName('body')[0]
-	// 	,"previousSibling should be BODY")
+})
+
+module("Browser",{
+	sheet: SheetRuler.createStyleSheet()
+})
+test("inspection", function(){
+	equal (typeof this.sheet, 'object', 'typeof')
+	equal ({}.toString.call(this.sheet), '[object CSSStyleSheet]', "[[Class]]")
+	ok (this.sheet instanceof Object, 'instanceof Object')
+	ok (this.sheet.constructor, 'Has a constructor')
+	ok (this.sheet.toString, 'Has a toString()')
+	ok (this.sheet.valueOf, 'Has a valueOf()')
 })
