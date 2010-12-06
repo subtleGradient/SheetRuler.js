@@ -44,16 +44,6 @@ test("shouldn't have a nextSibling", function(){
 	ok ((this.sheet.ownerNode || this.sheet.owningElement).nextSibling == null)
 })
 
-test("styleSheets limit?", function(){
-	var startLength = document.styleSheets.length
-	var i = 0, max = 32 - startLength
-	while (++i <= max){
-		SheetRuler.createStyleSheet("Sheet-" + i)
-		equal (document.styleSheets.length, startLength + i, "Should support at least " + (startLength + i) + " styleSheets")
-	}
-	
-})
-
 module("Browser",{
 	sheet: SheetRuler.createStyleSheet()
 })
@@ -65,3 +55,13 @@ test("inspection", function(){
 	ok (this.sheet.toString, 'Has a toString()')
 	ok (this.sheet.valueOf, 'Has a valueOf()')
 })
+test("styleSheets limit?", function(){
+	var startLength = document.styleSheets.length
+	var i = 0, max = 36 - startLength
+	while (++i <= max){
+		SheetRuler.createStyleSheet("Sheet-" + i)
+		equal (document.styleSheets.length, startLength + i, "Should support at least " + (startLength + i) + " styleSheets")
+	}
+	
+})
+

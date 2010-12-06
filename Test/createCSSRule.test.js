@@ -45,18 +45,18 @@ test("New !important must override inline style", function(){
 	notEqual (old, testEl.offsetTop)
 })
 
-// test("maximum number of cssRules?", function(){
-// 	// var rules = (this.sheet.cssRules || this.sheet.rules)
-// 	// BIZARRE! in Safari 3.0.4, resolving sheet.cssRules into a single 
-// 	// rules variable breaks the magical length property!
-// 	// Apparently you must always use sheet.cssRules.length
-// 	var sheet = this.sheet
-// 	var startLength = (sheet.cssRules || sheet.rules).length
-// 	var i = 0, max = 256
-// 	while (++i <= max){
-// 		SheetRuler.createRule(sheet, '#test', 'height:' + i + "px")
-// 		equal (startLength + i, (sheet.cssRules || sheet.rules).length, "Should support at least " + (startLength + i) + " cssRules")
-// 		equal (i, testEl.offsetHeight,
-// 			"cssRule " + (startLength + i) + " should work")
-// 	}
-// })
+test("maximum number of cssRules?", function(){
+	// var rules = (this.sheet.cssRules || this.sheet.rules)
+	// BIZARRE! in Safari 3.0.4, resolving sheet.cssRules into a single 
+	// rules variable breaks the magical length property!
+	// Apparently you must always use sheet.cssRules.length
+	var sheet = this.sheet
+	var startLength = (sheet.cssRules || sheet.rules).length
+	var i = 0, max = 256
+	while (++i <= max){
+		SheetRuler.createRule(sheet, '#test', 'height:' + i + "px")
+		equal (startLength + i, (sheet.cssRules || sheet.rules).length, "Should support at least " + (startLength + i) + " cssRules")
+		equal (i, testEl.offsetHeight,
+			"cssRule " + (startLength + i) + " should work")
+	}
+})
