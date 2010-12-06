@@ -13,7 +13,8 @@ provides : SheetRuler
 var SheetRuler = {}
 ;(function(SheetRuler){
 
-var styleSheets = document.styleSheets
+var	styleSheets = document.styleSheets
+,	styleSheetParent = document.documentElement
 
 SheetRuler.isSheetReal = isSheetReal
 SheetRuler.createStyleSheet = createStyleSheetWrapper
@@ -42,22 +43,20 @@ function isSheetReal(sheet){
 	while (i--) if (styleSheets[i] === sheet) return true
 	return false
 }
-
 function createStyleSheetWrapper(name){
 	var	fallback
 	,	element
 	,	sheet = createStyleSheet(name)
 	if (!isSheetReal(sheet)){
 		element = getElementForSheetOrRule(sheet)
-		element.parentNode.removeChild(element)
-		fallback = sheet = createStyleSheet_fallback(name)
+		if (element) element.parentNode.removeChild(element)
+		styleSheetParent = document.getElementsByTagName('head')[0]
+		sheet = createStyleSheet(name)
 		if (!isSheetReal(sheet)) throw new Error("No support for dynamic styleSheets")
 	}
-	// element = getElementForSheetOrRule(sheet)
-	// if (element && element.previousSibling && element.previousSibling.nodeName == 'HEAD'){
-	// 	if (fallback) SheetRuler.createStyleSheet = createStyleSheet_fallback
-	// 	else SheetRuler.createStyleSheet = createStyleSheet
-	// }
+	element = getElementForSheetOrRule(sheet)
+	if (element && element.previousSibling && element.previousSibling.nodeName == 'BODY')
+		SheetRuler.createStyleSheet = createStyleSheet
 	return sheet
 }
 
@@ -76,52 +75,52 @@ function createStyleSheetRule(sheet, selector, style){
 
 function createStyleSheet(name){
 	// Append a new STYLE element to the end of the greatest grandparent element.
-	// This is the simplest way to ensure that the new STYLE is at the very end of the styleSheets collection.
-	// That is necessary for new sheets to have the greatest importance in the cascade.
+	//   This is the simplest way to ensure that the new STYLE is at the very end of the styleSheets collection.
+	//   That is necessary for new sheets to have the greatest importance in the cascade.
 	
 	// SUCCESS
-	//   Safari 5
-	//   Safari 4
-	//   Firefox 1.0
+	//   Safari 5.0.3
+	//   Safari 4.0
+	//   Firefox 1.0.4
 	//   IE6
 	//   IE8 Standards
 	//   IE8 as IE7 Standards
 	//   IE8 Quirks
 	//   IE9 Standards
 	//   Opera 9.24
+	//   Opera 10.54
 	//   Mozilla 1.4
 	
 	// ODDNESS
-	// In Opera 9.24 & 10.54 (uh, probly all of them), before domready
-	//   document.documentElement.appendChild(document.createElement('style')) 
-	//   adds the new STYLE element BEFORE the BODY tag.
-	//   But if there are any STYLE elements in the BODY, 
-	//   they will be applied with higher precidence than the dynamic sheet you just added.
+	//   Before domready, this function will add your new STYLE before the BODY.
+	//   Your new sheet will be lower down the cascade than the STYLEs in the BODY.
+	//   But only in some browsers!
+	// 
+	//   Safari 3.0.4 is supported, but requires the styleSheetParent to be the HEAD
+	//     see createStyleSheetWrapper
 	
 	// FAIL
 	//   Safari 2.0
 	//   Safari 2.0.4
-	//   Safari 3.0.4 creates a new StyleSheet without effecting the document
+	//   Internet Explorer 5.2.3 for Mac
 	
-	if (!name) name = "SheetRuler-" + +new Date
-	else name = name.replace(/[^\w_-]/g,'-')
+	// if (!name) name = "SheetRuler-" + +new Date
+	// else name = name.replace(/[^\w_-]/g,'-')
 	var styleElement = document.createElement("style")
-	styleElement.setAttribute('name', styleElement.id = name)
+	// styleElement.setAttribute('name', styleElement.id = name)
 	// if (document.documentElement.lastChild.nodeName == 'BODY')
-	document.documentElement.appendChild(styleElement)
+	styleSheetParent.appendChild(styleElement)
 	return styleElement.sheet || styleElement.styleSheet
 }
-
-function createStyleSheet_fallback(name){
-	// Works in Safari 3.0.4
-	// Older versions of Safari strictly limited STYLE elements to children of the HEAD
-	// So, adding a STYLE element to a different parent dynamically fails silently.
-	var style = document.createElement('div')
-	style.appendChild(document.createElement('style'))
-	document.getElementsByTagName('head')[0].appendChild(style)
-	var styleElement = style.firstChild
-	return styleElement.sheet || styleElement.styleSheet
-}
+// 
+// function createStyleSheet_fallback(name){
+// 	// Works in Safari 3.0.4
+// 	// Older versions of Safari strictly limited STYLE elements to children of the HEAD
+// 	// So, adding a STYLE element to a different parent dynamically fails silently.
+// 	var styleElement = document.createElement('style')
+// 	document.getElementsByTagName('head')[0].appendChild(styleElement)
+// 	return styleElement.sheet || styleElement.styleSheet
+// }
 
 function disableSheet(sheet){}
 function destroySheet(sheet){}
