@@ -13,10 +13,6 @@ test("Create a new StyleSheet", function(){
 	ok (SheetRuler.isSheetReal(this.sheet), "sheet should be real")
 })
 
-test("new StyleSheet's node should be a child of HTML", function(){
-	equal (SheetRuler.getElement(this.sheet).parentNode.nodeName, 'HTML', "parentNode should be HTML")
-})
-
 test("new Sheet changed document.styleSheets.length", function(){
 	notEqual (document.styleSheets.length, styleSheets_length)
 	equal (document.styleSheets.length, styleSheets_length + 1)
@@ -62,6 +58,5 @@ test("styleSheets limit?", function(){
 		SheetRuler.createStyleSheet("Sheet-" + i)
 		equal (document.styleSheets.length, startLength + i, "Should support at least " + (startLength + i) + " styleSheets")
 	}
-	
 })
 

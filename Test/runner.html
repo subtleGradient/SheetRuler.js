@@ -6,17 +6,6 @@
 	<link rel=stylesheet href="lib/qunit/qunit.css">
 <style>html,body{ margin:0;padding:0;}</style>
 <script src="lib/qunit/qunit.js"></script>
-<script src="../Source/SheetRuler.js"></script>
-<script>
-function load(location){
-	var newScript = document.createElement('script')
-	newScript.src = location + "?_" + +new Date
-	var firstScript = document.getElementsByTagName('script')[0]
-	firstScript.parentNode.insertBefore(newScript,firstScript)
-}
-load(('./'+location).replace(/^[^?]*\?/,''))
-// load(('./'+location.hash).replace('#',''))
-</script>
 </head>
 <body>
 
@@ -37,5 +26,16 @@ load(('./'+location).replace(/^[^?]*\?/,''))
 	left: -999px;
 }
 </style>
+<script src="../Source/SheetRuler.js"></script>
+<script>
+function load(location){
+	var newScript = document.createElement('script')
+	newScript.src = location + "?_" + +new Date
+	var firstScript = document.getElementsByTagName('script')[0]
+	firstScript.parentNode.insertBefore(newScript,firstScript)
+}
+load(('./'+location).replace(/^[^?]*\?/,''))
+// load(('./'+location.hash).replace('#',''))
+</script>
 </body>
 </html>
