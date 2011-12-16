@@ -10,6 +10,8 @@ license   : MIT
 provides : SheetRuler
 ...
 */
+/*jshint asi:true */
+
 var SheetRuler = {}
 ;(function(SheetRuler){
 
